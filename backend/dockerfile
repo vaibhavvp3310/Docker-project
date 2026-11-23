@@ -1,0 +1,29 @@
+#stage -1
+
+FROM node AS build
+
+WORKDIR /app
+
+COPY ./package.json /app
+
+RUN npm install
+
+#stage -2
+
+FROM node:lts-alpine 
+
+RUN adduser -D backend
+
+WORKDIR /app
+
+COPY --from=build /app/node_modules ./node_modules 
+
+COPY . .
+
+EXPOSE 5000
+
+
+USER backend
+
+CMD [ "npm","start" ]
+

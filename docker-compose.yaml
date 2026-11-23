@@ -1,0 +1,65 @@
+services:
+  mongodb:
+    image: "mongo"
+    container_name: "mongodb"
+    volumes:
+      - mongo_data:/data/db
+    env_file:
+      - ./env/mongo.env
+    user: "999:999"
+    read_only: true
+    tmpfs: "/tmp"
+    cap_drop:
+      - "ALL"
+    security_opt:
+      - "no-new-privileges:true"
+    mem_limit: 256m
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 20s
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "3000:3000"
+    container_name: "frontend"
+    depends_on:
+      backend:
+        condition: service_healthy
+    read_only: true
+    tmpfs:
+      - "/tmp"
+      - "/app/node_modules/.cache"
+    cap_drop:
+      - "ALL"
+    security_opt:
+      - "no-new-privileges:true"
+    mem_limit: 256m
+
+  backend:
+    build: ./backend
+    container_name: "backend"
+    env_file:
+      - ./env/backend.env
+    read_only: true
+    tmpfs: "/tmp"
+    cap_drop:
+      - "ALL"
+    security_opt:
+      - "no-new-privileges:true"
+    mem_limit: 256m
+    healthcheck:
+      test:
+        ["CMD", "wget", "--spider", "-q", "http://localhost:5000/api/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 15s
+    depends_on:
+      mongodb:
+        condition: service_healthy
+volumes:
+  mongo_data:

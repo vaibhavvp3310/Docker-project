@@ -1,0 +1,28 @@
+#stage -1
+FROM node AS build
+
+WORKDIR /app
+
+COPY ./package.json /app
+
+RUN npm install
+
+#stage -2
+
+FROM node:lts-alpine
+
+RUN adduser -D frontend
+
+WORKDIR /app
+
+USER frontend
+
+#change ownership of node_modules folder to frontend
+COPY --chown=frontend:frontend --from=build /app/node_modules ./node_modules
+
+COPY . .
+
+EXPOSE 3000
+
+CMD [ "npm","start" ]
+

@@ -1,0 +1,13 @@
+# Environment files with real credentials
+env/backend.env
+env/mongo.env
+
+# Dependencies
+node_modules/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Docker
+*.log
